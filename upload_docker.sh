@@ -5,14 +5,15 @@
 
 # Step 1:
 # Create dockerpath
-username=alpegon
-dockerpath=$username/house-price-prediction
+username=$1
+container_name=$2
+dockerpath=$username/$container_name
 
 # Step 2:  
 # Authenticate & tag
 echo "Docker ID and Image: $dockerpath"
 docker login --username $username
-docker tag house-price-prediction $dockerpath
+docker tag $container_name $dockerpath
 
 # Step 3:
 # Push image to a docker repository

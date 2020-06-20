@@ -1,42 +1,120 @@
-<include a CircleCI status badge, here>
+[![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![CircleCI](https://circleci.com/gh/alpegon/project-ml-microservice-kubernetes.svg?style=svg)](https://circleci.com/gh/alpegon/project-ml-microservice-kubernetes)
+
 
 ## Project Overview
 
-In this project, you will apply the skills you have acquired in this course to operationalize a Machine Learning Microservice API. 
+In this project you can find the files and scripts to operationalize a Machine Learning Microservice API.
+The service uses a pre-trained, `sklearn` model that has been trained to predict housing prices in Boston according to several features, such as average rooms in a home and data about highway access, teacher-to-pupil ratios, and so on.
 
-You are given a pre-trained, `sklearn` model that has been trained to predict housing prices in Boston according to several features, such as average rooms in a home and data about highway access, teacher-to-pupil ratios, and so on. You can read more about the data, which was initially taken from Kaggle, on [the data source site](https://www.kaggle.com/c/boston-housing). This project tests your ability to operationalize a Python flask app—in a provided file, `app.py`—that serves out predictions (inference) about housing prices through API calls. This project could be extended to any pre-trained machine learning model, such as those for image recognition and data labeling.
+### Project files
 
-### Project Tasks
-
-Your project goal is to operationalize this working, machine learning microservice using [kubernetes](https://kubernetes.io/), which is an open-source system for automating the management of containerized applications. In this project you will:
-* Test your project code using linting
-* Complete a Dockerfile to containerize this application
-* Deploy your containerized application using Docker and make a prediction
-* Improve the log statements in the source code for this application
-* Configure Kubernetes and create a Kubernetes cluster
-* Deploy a container using Kubernetes and make a prediction
-* Upload a complete Github repo with CircleCI to indicate that your code has been tested
-
-You can find a detailed [project rubric, here](https://review.udacity.com/#!/rubrics/2576/view).
-
-**The final implementation of the project will showcase your abilities to operationalize production microservices.**
+```bash
+├── app.py : Flask application (microservice to deploy)
+├── .circleci
+│   └── config.yml : Config file for the circleci environment
+├── Dockerfile : File containing the build steps of the docker container
+├── kubernetes
+│   ├── app-deployment.yml : deployment template for the microservice in kubernetes
+│   ├── app-svc.yml : load balancer service deployment template
+│   ├── make_prediction_lb.sh : bash script to test the kubernetes microservice with LB capabilities
+│   └── run_kubernetes_lb.sh : bash script to deploy the microservice and the LB in kubernetes
+├── LICENSE : Apache 2 license
+├── Makefile : make script with setup, install, and lint steps
+├── make_predictions.sh : bash script to test the microservice locally
+├── model_data : data files for the model
+│   ├── boston_housing_prediction.joblib
+│   └── housing.csv
+├── output_txt_files
+│   ├── docker_out.txt : expected docker output
+│   └── kubernetes_out.txt : expected kubernetes output
+├── README.md : this readme
+├── requirements.txt : required pip libraries
+├── run_docker.sh : script to launch the app as a docker container
+├── run_kubernetes.sh : script to launch the app as a kubernetes pod
+└── upload_docker.sh : script to upload the container image
+```
 
 ---
 
 ## Setup the Environment
 
-* Create a virtualenv and activate it
+* Create a virtualenv and activate it with `make setup`
 * Run `make install` to install the necessary dependencies
 
-### Running `app.py`
+## Basic deployments
 
-1. Standalone:  `python app.py`
-2. Run in Docker:  `./run_docker.sh`
-3. Run in Kubernetes:  `./run_kubernetes.sh`
+### Standalone
 
-### Kubernetes Steps
+Run the application with:
+```
+python app.py
+```
 
-* Setup and Configure Docker locally
-* Setup and Configure Kubernetes locally
-* Create Flask app in Container
-* Run via kubectl
+### Docker
+Make sure that you have docker installed, and that you have the execution rights for containers, then:
+```
+/run_docker.sh house-price-prediction
+```
+
+### Kubernetes
+First upload the container image to docker hub:
+```
+./upload_docker.sh alpegon house-price-prediction
+```
+
+Then with the kubernetes cluster running execute:
+```
+./run_kubernetes.sh alpegon house-price-prediction
+```
+
+## Testing the code
+You can check the Dockerfile and the application code with the command:
+```
+make lint
+```
+This command executes `hadolint` to verify the Dockerfile and pylint to verify the application code.
+
+
+## Testing the service
+
+To test if the microservice is working in localhost you can use the script `/make_prediction.sh`. It should generate a response like the following:
+```
+Port: 8000
+{
+  "prediction": [
+    20.35373177134412
+  ]
+}
+```
+
+In the server, the output should look like this:
+```
+[2020-06-20 22:10:53,882] INFO in app: JSON payload: 
+{'CHAS': {'0': 0}, 'RM': {'0': 6.575}, 'TAX': {'0': 296.0}, 'PTRATIO': {'0': 15.3}, 'B': {'0': 396.9}, 'LSTAT': {'0': 4.98}}
+[2020-06-20 22:10:53,904] INFO in app: Inference payload DataFrame: 
+   CHAS     RM    TAX  PTRATIO      B  LSTAT
+0     0  6.575  296.0     15.3  396.9   4.98
+[2020-06-20 22:10:53,918] INFO in app: Scaling Payload: 
+   CHAS     RM    TAX  PTRATIO      B  LSTAT
+0     0  6.575  296.0     15.3  396.9   4.98
+[2020-06-20 22:10:53,923] INFO in app: Output prediction: [20.35373177134412]
+172.17.0.1 - - [20/Jun/2020 22:10:53] "POST /predict HTTP/1.1" 200 -
+```
+
+## More deployments
+
+### Kubernetes with Load Balancer
+To simulate the load balancer functionality, first, in other console execute:
+```
+minikube tunnel
+```
+Then you can create the app deployment and the service with the script:
+```
+./kubernetes/run_kubernetes_lb.sh
+```
+And finally test it with the script:
+```
+./kubernetes/make_prediction_lb.sh
+```
+

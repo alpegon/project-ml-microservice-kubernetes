@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prediction-deployment
+  labels:
+    app: house-price-prediction
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: house-price-prediction
+  template:
+    metadata:
+      labels:
+        app: house-price-prediction
+    spec:
+      containers:
+      - name: house-price-prediction
+        image: alpegon/house-price-prediction
+        ports:
+          - containerPort: 80
+            protocol: TCP
