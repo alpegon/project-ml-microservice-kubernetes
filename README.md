@@ -54,11 +54,11 @@ python app.py
 ### Docker
 Make sure that you have docker installed, and that you have the execution rights for containers, then:
 ```
-/run_docker.sh house-price-prediction
+./run_docker.sh house-price-prediction
 ```
 
 ### Kubernetes
-First upload the container image to docker hub:
+First upload the container image to DockerHub:
 ```
 ./upload_docker.sh alpegon house-price-prediction
 ```
@@ -73,7 +73,7 @@ You can check the Dockerfile and the application code with the command:
 ```
 make lint
 ```
-This command executes `hadolint` to verify the Dockerfile and pylint to verify the application code.
+This command executes `hadolint` to verify the Dockerfile and `pylint` to verify the application code.
 
 
 ## Testing the service
@@ -104,7 +104,7 @@ In the server, the output should look like this:
 
 ## More deployments
 
-### Kubernetes with Load Balancer
+### Kubernetes with Load Balancer in minikube
 To simulate the load balancer functionality, first, in other console execute:
 ```
 minikube tunnel
